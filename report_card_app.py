@@ -68,6 +68,10 @@ def generate_pdf(student_data, subjects_list, school_details):
     
     styles = getSampleStyleSheet()
     cred_style = ParagraphStyle('Creds', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#002060'), alignment=1)
+    
+    # New custom centered bold style for government recognition text block
+    rec_center_style = ParagraphStyle('RecCenter', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#000000'), alignment=1, spaceAfter=2)
+    
     title_style = ParagraphStyle('SchoolTitle', fontName='Helvetica-Bold', fontSize=26, textColor=colors.HexColor('#002060'), alignment=0, leading=32)
     addr_style = ParagraphStyle('SchoolAddr', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#000000'), alignment=0, leading=13)
     
@@ -89,9 +93,12 @@ def generate_pdf(student_data, subjects_list, school_details):
         ('BOTTOMPADDING', (0,0), (-1,-1), 6)
     ]))
     story.append(cred_table)
-    story.append(Spacer(1, 12))
+    story.append(Spacer(1, 10))
 
-    # 2. Header Assembly
+    # 2. Centered & Bold Recognition Banner Block
+    story.append(Paragraph("(RECOGNIZED BY GOVT OF RAJASTHAN)", rec_center_style))
+
+    # 3. Clean Left-Side Monogram & Header Text Layout
     logo_path = "logo.png"
     if not os.path.exists(logo_path):
         logo_path = "logo.jpg"
@@ -125,8 +132,8 @@ def generate_pdf(student_data, subjects_list, school_details):
 
     story.append(Spacer(1, 14))
 
-    # 3. Ribbon banner block
-    ribbon_table = Table([[Paragraph("REPORT CARD", rep_style)]], colWidths=[540])
+    # 4. Ribbon banner block
+    ribbon_table = Table([[Paragraph("REPORT CARD SESSION: 2026-27", rep_style)]], colWidths=[540])
     ribbon_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#002060')),
         ('TOPPADDING', (0,0), (-1,-1), 5),
@@ -136,7 +143,7 @@ def generate_pdf(student_data, subjects_list, school_details):
     story.append(ribbon_table)
     story.append(Spacer(1, 10))
 
-    # 4. Student Metadata Information Box
+    # 5. Student Metadata Information Box
     meta_data = [
         [Paragraph("SR No.", body_bold), Paragraph(f":  {student_data['SR No']}", body_norm),
          Paragraph("Father's Name", body_bold), Paragraph(f":  {student_data['Father Name']}", body_norm)],
@@ -157,13 +164,13 @@ def generate_pdf(student_data, subjects_list, school_details):
     story.append(meta_table)
     story.append(Spacer(1, 15))
 
-    # 5. Core Matrix Structure Grid
+    # 6. Core Matrix Structure Grid
     headers = [
         Paragraph("Subject", th_style),
         Paragraph("Unit Test 1<br/>(10)", th_style), Paragraph("Unit Test 2<br/>(10)", th_style),
-        Paragraph("H.Y.<br/>(10)", th_style), Paragraph("Total<br/>(30)", th_style),
-        Paragraph("Unit Test 3<br/>(10)", th_style), Paragraph("Unit Test 4<br/>(10)", th_style),
-        Paragraph("Final<br/>(50)", th_style), Paragraph("Total<br/>(100)", th_style),
+        Paragraph("Unit Test 3<br/>(10)", th_style), Paragraph("H.Y.<br/>(50)", th_style),
+        Paragraph("Total<br/>(100)", th_style), Paragraph("Unit Test 4<br/>(30)", th_style),
+        Paragraph("Final<br/>(70)", th_style), Paragraph("Total<br/>(100)", th_style),
         Paragraph("Grade", th_style)
     ]
     table_data = [headers]
@@ -181,23 +188,31 @@ def generate_pdf(student_data, subjects_list, school_details):
         ('LEFTPADDING', (0, 1), (0, -1), 10),
     ]))
     story.append(score_table)
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 20))
 
-    # 6. Bottom Signatures Footer Box
+    # 7. Bottom Signatures & Result Status Footer Box
     f_title = ParagraphStyle('FTitle', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#333333'), alignment=1)
     f_lbl = ParagraphStyle('FLbl', fontName='Helvetica-Bold', fontSize=7, textColor=colors.HexColor('#777777'), alignment=1)
+    result_lbl_style = ParagraphStyle('ResLbl', fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#002060'), alignment=1)
+    result_box_style = ParagraphStyle('ResBox', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#555555'), alignment=1)
     
     footer_data = [
         ["", "", "", "", ""],
         [Paragraph("<b>Principal Signature</b>", f_title), "", Paragraph("<b>RESULT DECLARATION DATE</b>", f_title), "", Paragraph("<b>Teacher Signature</b>", f_title)],
         ["_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _", "", "______ / ______ / _________", "", "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"],
-        [Paragraph("PRINCIPAL SIGNATURE", f_lbl), "", "", "", Paragraph("TEACHER SIGNATURE", f_lbl)]
+        [Paragraph("PRINCIPAL SIGNATURE", f_lbl), "", "", "", Paragraph("TEACHER SIGNATURE", f_lbl)],
+        [Spacer(1, 15), "", "", "", ""],
+        [Paragraph("FINAL RESULT: [  PASS  /  FAIL  ]", result_lbl_style), "", "", "", ""],
+        [Paragraph("Status: ____________________", result_box_style), "", "", "", ""]
     ]
+    
     footer_table = Table(footer_data, colWidths=[160, 30, 160, 30, 160])
     footer_table.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('SPAN', (0, 5), (0, 5)),
+        ('SPAN', (0, 6), (0, 6))
     ]))
     story.append(footer_table)
 
@@ -220,9 +235,9 @@ def generate_pdf(student_data, subjects_list, school_details):
 school_details = {
     "name": "AZIZ PUBLIC SCHOOL",
     "address": "6, Aziz Public School Aziz Colony Chardarwaza Jaipur Rajasthan",
-    "reg_no": "123/01-2",
-    "dise_code": "XYZ10213",
-    "school_code": "1154987M"
+    "reg_no": "41/91-92",
+    "dise_code": "08122508601",
+    "school_code": "267-2000"
 }
 
 tab_marking, tab_config = st.tabs(["📄 Print Premium Report Cards", "⚙️ Manage Subjects per Class"])
@@ -261,7 +276,6 @@ with tab_config:
             if not class_subjects.empty:
                 for idx, r in class_subjects.iterrows():
                     c_label, c_btn = st.columns([3, 1])
-                    # Fixed column key here to use 'Subject' instead of 'subject_name'
                     c_label.write(f"📖 **{r['Subject']}**")
                     if c_btn.button("Delete", key=f"del_{r['id']}"):
                         remove_subject_from_db(r['id'])
@@ -304,7 +318,6 @@ with tab_marking:
                 selected_class = student_row['Class']
                 
                 db_subjects = get_subjects_by_class(selected_class)
-                # Fixed column key here to use 'Subject' instead of 'subject_name'
                 subjects_list = db_subjects['Subject'].tolist() if not db_subjects.empty else []
                 
                 c_title, c_dl = st.columns([3, 1])
