@@ -70,17 +70,23 @@ def generate_pdf(student_data, subjects_list, school_details):
     cred_style = ParagraphStyle('Creds', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#002060'), alignment=1)
     
     # New custom centered bold style for government recognition text block
-    rec_center_style = ParagraphStyle('RecCenter', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#000000'), alignment=1, spaceAfter=2)
+    rec_center_style = ParagraphStyle('RecCenter', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#000000'), alignment=1, spaceAfter=1)
     
-    title_style = ParagraphStyle('SchoolTitle', fontName='Helvetica-Bold', fontSize=26, textColor=colors.HexColor('#002060'), alignment=0, leading=32)
-    addr_style = ParagraphStyle('SchoolAddr', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#000000'), alignment=0, leading=13)
+    title_style = ParagraphStyle('SchoolTitle', fontName='Helvetica-Bold', fontSize=32, textColor=colors.HexColor('#002060'), alignment=0, leading=32)
+    addr_style = ParagraphStyle('SchoolAddr', fontName='Helvetica', fontSize=10, textColor=colors.HexColor('#000000'), alignment=0, leading=12)
     
     rep_style = ParagraphStyle('RepCard', fontName='Helvetica-Bold', fontSize=13, textColor=colors.white, alignment=1)
     body_bold = ParagraphStyle('BBold', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#002060'))
-    body_norm = ParagraphStyle('BNorm', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#333333'))
+    body_norm = ParagraphStyle('BNorm',fontName='Helvetica-Bold',fontSize=10,leading=12,wordWrap='LTR',textColor=colors.HexColor('#333333'))
     sub_row_style = ParagraphStyle('SubRow', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#111111'))
-    th_style = ParagraphStyle('THead', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white, alignment=1, leading=9)
-
+    th_style = ParagraphStyle('THead',fontName='Helvetica-Bold',fontSize=7.5,leading=8,textColor=colors.white,alignment=1)
+    
+    sr_style = ParagraphStyle(
+    'SRValue',
+    fontName='Helvetica-Bold',
+    fontSize=11,
+    textColor=colors.HexColor('#8B0000')   # or #002060
+)
     # 1. School Metadata Credentials Top Bar
     cred_data = [
         [Paragraph(f"<b>REG. NO.</b><br/>{school_details['reg_no']}", cred_style),
@@ -112,7 +118,7 @@ def generate_pdf(student_data, subjects_list, school_details):
         ]
         school_logo = Image(logo_path, width=65, height=70)
         
-        header_table = Table([[school_logo, school_text_block]], colWidths=[70, 320])
+        header_table = Table([[school_logo, school_text_block]], colWidths=[70, 370])
         header_table.hAlign = 'CENTER'
         header_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -130,10 +136,10 @@ def generate_pdf(student_data, subjects_list, school_details):
         story.append(Spacer(1, 4))
         story.append(Paragraph(school_details['address'], addr_center))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
 
     # 4. Ribbon banner block
-    ribbon_table = Table([[Paragraph("REPORT CARD SESSION: 2026-27", rep_style)]], colWidths=[540])
+    ribbon_table = Table([[Paragraph("REPORT CARD SESSION 2026–2027", rep_style)]], colWidths=[540])
     ribbon_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#002060')),
         ('TOPPADDING', (0,0), (-1,-1), 5),
@@ -141,44 +147,65 @@ def generate_pdf(student_data, subjects_list, school_details):
         ('ALIGN', (0,0), (-1,-1), 'CENTER')
     ]))
     story.append(ribbon_table)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 5))
 
     # 5. Student Metadata Information Box
     meta_data = [
-        [Paragraph("SR No.", body_bold), Paragraph(f":  {student_data['SR No']}", body_norm),
+        [Paragraph("SR No.", body_bold), Paragraph(f":  {student_data['SR No']}", sr_style),
          Paragraph("Father's Name", body_bold), Paragraph(f":  {student_data['Father Name']}", body_norm)],
         [Paragraph("Student Name", body_bold), Paragraph(f":  {student_data['Student Name']}", body_norm),
          Paragraph("Mother's Name", body_bold), Paragraph(f":  {student_data['Mother Name']}", body_norm)],
         [Paragraph("Class", body_bold), Paragraph(f":  {student_data['Class']}", body_norm),
          Paragraph("DOB", body_bold), Paragraph(f":  {student_data['DOB']}", body_norm)]
     ]
-    meta_table = Table(meta_data, colWidths=[95, 175, 95, 175])
+    meta_table = Table(meta_data, colWidths=[85, 185, 85, 185])
     meta_table.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#D1DDF2')),
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F9FBFC')),
         ('TOPPADDING', (0,0), (-1,-1), 6),
         ('BOTTOMPADDING', (0,0), (-1,-1), 6),
         ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
     ]))
     story.append(meta_table)
     story.append(Spacer(1, 15))
 
     # 6. Core Matrix Structure Grid
     headers = [
-        Paragraph("Subject", th_style),
-        Paragraph("Unit Test 1<br/>(10)", th_style), Paragraph("Unit Test 2<br/>(10)", th_style),
-        Paragraph("Unit Test 3<br/>(10)", th_style), Paragraph("H.Y.<br/>(50)", th_style),
-        Paragraph("Total<br/>(100)", th_style), Paragraph("Unit Test 4<br/>(30)", th_style),
-        Paragraph("Final<br/>(70)", th_style), Paragraph("Total<br/>(100)", th_style),
-        Paragraph("Grade", th_style)
-    ]
+    Paragraph("Subject", th_style),
+    Paragraph("Unit Test 1<br/>(10)", th_style),
+    Paragraph("Unit Test 2<br/>(10)", th_style),
+    Paragraph("Unit Test 3<br/>(10)", th_style),
+    Paragraph("H.Y.<br/>(70)", th_style),
+    Paragraph("Total<br/>(100)", th_style),
+    Paragraph("Unit Test 4<br/>(30)", th_style),
+    Paragraph("Final<br/>(70)", th_style),
+    Paragraph("Total<br/>(100)", th_style),
+    Paragraph("Grand<br/>Total", th_style),
+    Paragraph("Grade", th_style)
+]
     table_data = [headers]
     
     for sub_name in subjects_list:
-        table_data.append([Paragraph(f"<b>{sub_name}</b>", sub_row_style), "", "", "", "", "", "", "", "", ""])
+        table_data.append([
+    Paragraph(f"<b>{sub_name}</b>", sub_row_style),"", "", "", "", "", "", "", "", "", ""])
         
-    score_table = Table(table_data, colWidths=[126, 46, 46, 46, 46, 46, 46, 46, 46, 46])
+    score_table = Table(
+    table_data,
+    colWidths=[
+        118,   # Subject
+        41,    # UT1
+        41,    # UT2
+        41,    # UT3
+        42,    # HY
+        42,    # Total
+        42,    # UT4
+        42,    # Final
+        42,    # Total
+        48,    # Grand Total
+        42     # Grade
+    ]
+)
     score_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#002060')),
         ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#B0C4DE')),
